@@ -27,7 +27,7 @@ var mouse = {
     y:0,
     down:false,
     init:function(){
-       $("#gamecanvas").mousemove(mouse.mousemovehandler);
+        $("#gamecanvas").mousemove(mouse.mousemovehandler);
         $('#gamecanvas').mousedown(mouse.mousedownhandler);
         $('#gamecanvas').mouseup(mouse.mouseuphandler);
         $('#gamecanvas').mouseout(mouse.mouseuphandler);
@@ -38,7 +38,7 @@ var mouse = {
         mouse.y = ev.pageY - offset.top;
         if(mouse.down){
             mouse.dragging = true;
-            console.log('mouse x = '+mouse.x + ', mouse y = '+ mouse.y+' dragging = ' + mouse.dragging );
+            // console.log('mouse x = '+mouse.x + ', mouse y = '+ mouse.y+' dragging = ' + mouse.dragging );
         }
 
     },
@@ -90,7 +90,35 @@ var game = {
 
     },
     handlePanning:function(){
-        game.offsetLeft++;
+
+        if(game.mode=="intro") {
+            if(game.panTo(700)){
+
+                game.mode = "load-next-hero";
+            }
+        }
+        if(game.mode=="wait-for-firing"){
+            console.log("wait-for-firing");
+            if(mouse.dragging){
+                game.panTo(mouse.x+game.offsetLeft);
+            } else {
+                game.panTo(game.slingshotX);
+            }
+
+        }
+        if(game.mode =="load-next-hero"){
+            //TODO verifier si le vilain est vivant sinon lvl success
+            //verifier s'il reste des heros vivant sinon niveau perdu
+            console.log("load-next-hero");
+            game.mode="wait-for-firing";
+        }
+        if(game.mode=="firing"){
+            game.panTo(game.slingshotX);
+        }
+        if(game.mode == "fired"){
+            //TODO:
+            // suivre le hero
+        }
     },
     animate:function() {
         //animer l'arriere plan
@@ -108,7 +136,41 @@ var game = {
             game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
         }
     },
-    maxSpeed:3
+    maxSpeed:3,
+    //min and max offset
+    minOffset:0,
+    maxOffset:300,
+    offsetLeft:0,
+    score:0,
+    panTo:function(newCenter){
+
+        if(Math.abs(newCenter-game.offsetLeft-game.canvas.width/4)>0 &&
+            game.offsetLeft <= game.maxOffset &&
+            game.offsetLeft >= game.minOffset){
+            var deltaX = Math.round((newCenter-game.offsetLeft-game.canvas.width/4)/2);
+            if (deltaX && Math.abs(deltaX) > game.maxSpeed){
+                deltaX = game.maxSpeed*Math.abs(deltaX)/(deltaX);
+            }
+            game.offsetLeft += deltaX;
+        } else {
+
+
+            return true;
+        }
+        if (game.offsetLeft < game.minOffset){
+            game.offsetLeft = game.minOffset;
+
+
+            return true;
+        } else if (game.offsetLeft > game.maxOffset){
+            game.offsetLeft = game.maxOffset;
+
+
+            return true;
+        }
+
+        return false;
+    }
 
 }
 
