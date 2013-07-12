@@ -38,8 +38,9 @@ var mouse = {
         mouse.y = ev.pageY - offset.top;
         if(mouse.down){
             mouse.dragging = true;
+            console.log('mouse x = '+mouse.x + ', mouse y = '+ mouse.y+' dragging = ' + mouse.dragging );
         }
-        console.log('mouse x = '+mouse.x + ', mouse y = '+ mouse.y+' dragging = ' + mouse.dragging );
+
     },
     mousedownhandler:function(ev){
         mouse.down = true;
@@ -85,6 +86,8 @@ var game = {
         game.offsetLeft=0;
         game.ended = false;
         game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
+
+
     },
     handlePanning:function(){
         game.offsetLeft++;
@@ -104,7 +107,8 @@ var game = {
         if(!game.ended){
             game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
         }
-    }
+    },
+    maxSpeed:3
 
 }
 
