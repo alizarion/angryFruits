@@ -1,3 +1,7 @@
+var timeStep = 1/60;
+var velocityIterations = 8;
+var positionIterations = 3;
+
 (function() {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -21,40 +25,6 @@
             clearTimeout(id);
         };
 }());
-
-var mouse = {
-    x:0,
-    y:0,
-    down:false,
-    init:function(){
-        $("#gamecanvas").mousemove(mouse.mousemovehandler);
-        $('#gamecanvas').mousedown(mouse.mousedownhandler);
-        $('#gamecanvas').mouseup(mouse.mouseuphandler);
-        $('#gamecanvas').mouseout(mouse.mouseuphandler);
-    },
-    mousemovehandler:function(ev){
-        var offset = $('#gamecanvas').offset();
-        mouse.x = ev.pageX - offset.left;
-        mouse.y = ev.pageY - offset.top;
-        if(mouse.down){
-            mouse.dragging = true;
-            // console.log('mouse x = '+mouse.x + ', mouse y = '+ mouse.y+' dragging = ' + mouse.dragging );
-        }
-
-    },
-    mousedownhandler:function(ev){
-        mouse.down = true;
-        mouse.downX = mouse.x;
-        mouse.downY = mouse.y;
-        //on annule l'action provoqué par l'evenement par defaut
-        ev.originalEvent.preventDefault();
-    },
-    mouseuphandler: function(ev){
-        mouse.down = false ;
-        mouse.dragging = false;
-    }
-
-}
 
 var game = {
 // Start initializing objects, preloading assets and display start screen
@@ -98,7 +68,7 @@ var game = {
             }
         }
         if(game.mode=="wait-for-firing"){
-            console.log("wait-for-firing");
+            //    console.log("wait-for-firing");
             if(mouse.dragging){
                 game.panTo(mouse.x+game.offsetLeft);
             } else {
@@ -109,7 +79,7 @@ var game = {
         if(game.mode =="load-next-hero"){
             //TODO verifier si le vilain est vivant sinon lvl success
             //verifier s'il reste des heros vivant sinon niveau perdu
-            console.log("load-next-hero");
+            // console.log("load-next-hero");
             game.mode="wait-for-firing";
         }
         if(game.mode=="firing"){
@@ -125,17 +95,40 @@ var game = {
 
         game.handlePanning();
         //animer les personnages
+        var currentTime = new Date().getTime();
+        var timeStep;
+        if(game.lastUpdatedTime){
+            timeStep = (currentTime- game.lastUpdatedTime) /1000;
+            box2d.step(timeStep);
+        }
+        game.lastUpdatedTime =currentTime;
+
         //dessiner l'arriere plan en parallax scrolling
         game.context.drawImage(game.currentLevel.backgroundImage,game.offsetLeft/4,0,640,480,0,0,640,480);
         game.context.drawImage(game.currentLevel.foregroundImage,game.offsetLeft,0,640,480,0,0,640,480);
         //dessiner le lance pierre
         game.context.drawImage(game.slingshotImage,game.slingshotX-game.offsetLeft,game.slingshotY);
         game.context.drawImage(game.slingshotFrontImage,game.slingshotX-game.offsetLeft,game.slingshotY);
-
+        // Draw all the bodies
+        game.drawAllBodies();
         if(!game.ended){
             game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
         }
+
     },
+    drawAllBodies:function(){
+
+        box2d.world.DrawDebugData();
+        //intérer sur les corp et les dessiner
+        for(var body = box2d.world.GetBodyList();body; body = body.GetNext()){
+            var entity = body.GetUserData();
+            if(entity){
+                entities.draw(entity,body.GetPosition(),body.GetAngle());
+            }
+        }
+
+
+    } ,
     maxSpeed:3,
     //min and max offset
     minOffset:0,
@@ -170,121 +163,101 @@ var game = {
         }
 
         return false;
-    }
-
-}
-
-var levels = {
-// Level data
-    data:[
-        { // First level
-            foreground:'desert-foreground',
-            background:'clouds-background',
-            entities:[]
-        },
-        { // Second level
-            foreground:'desert-foreground',
-            background:'clouds-background',
-            entities:[]
-        }
-    ],
-// Initialize level selection screen
-    init:function(){
-        var html = "";
-        for (var i = 0; i < levels.data.length; i++) {
-            var level = levels.data[i];
-            html += ' <input type="button" value="'+(i + 1)+'">';
-        };
-        $('#levelselectscreen').html(html);
-// Set the button click event handlers to load level
-        $('#levelselectscreen input').click(function(){
-            levels.load(this.value-1);
-            $('#levelselectscreen').hide();
-        });
     },
-// Load all data and images for a specific level
-    load:function(number){
-
-        //declare new current level
-        game.currentLevel = {number: number, hero:[]};
-        game.score = 0;
-        $('#score').html('Score '+game.score);
-        var level = levels.data[number];
-        // chargement des images du level
-        game.currentLevel.backgroundImage =  loader.loadImage("img/backgrounds/"+level.background+".png");
-        game.currentLevel.foregroundImage =  loader.loadImage("img/backgrounds/"+level.foreground+".png");
-        //fronde .. lasstack
-        game.slingshotImage = loader.loadImage("img/slingshot.png");
-        game.slingshotFrontImage = loader.loadImage("img/slingshot-front.png");
-
-        //lancer le jeu quand le chargement est términé
-        if(loader.loaded){
-            game.start();
-        }
-        else{
-            loader.onload = game.start;
-        }
-
-    }
-}
-
-var loader={
-    loaded : true,
-    loadedCount:0,
-    totalCount:0,
-
-    init:function(){
-        var mp3Support,oggSupport;
-        var audio = document.createElement('audio');
-
-        if(audio.canPlayType){
-            mp3Support = '' != audio.canPlayType('audio/mpeg');
-            oggSupport = '' != audio.canPlayType("audio/ogg; codecs='vorbis'");
-        } else {
-            mp3Support = false;
-            oggSupport = false;
-        }
-
-        loader.soundFileExtn = mp3Support ? '.mp3' : oggSupport ?'ogg':undefined;
-    },
-    loadImage:function(url){
-        this.totalCount++;
-        this.loaded = false;
-        $('#loadingscreen').show();
-
-        var  image = new Image();
-        image.src = url;
-        console.log(image.src) ;
-        image.onload=loader.itemLoaded;
-        return image;
-    },
-    soundFileExtn:".mp3",
-    loadSound:function(url){
-        this.totalCount++;
-        this.loaded = false;
-        $('#loadingscreen').show();
-        var audio = new Audio();
-        audio.src = url + loader.soundFileExtn;
-        audio.addEventListener("canplaythrough", loader.itemLoaded,false);
-        return audio;
-    },
-    itemLoaded:function(){
-
-        loader.loadedCount++;
-        console.log(loader.loadedCount);
-        $('#loadingmessage').html('Loaded'+loader.loadedCount+' of '+ loader.totalCount);
-        console.log('hey') ;
-        if(loader.loadedCount == loader.totalCount){
-            //loader has loaded completely
-            loader.loaded = true;
-            // cacher la barre de lancement
-            $('#loadingscreen').hide('slow');
-            if(loader.onload){
-                loader.onload();
-                loader.onload = undefined;
-
+    countHeroesAndVillains: function(){
+        game.heroes = [];
+        game.villains = [];
+        for(var body = box2d.world.GetBodyList();body ; body = body.GetNext()){
+            var entity = body.GetUserData();
+            if(entity){
+                if(entity.type == "hero"){
+                    game.heroes.push(body);
+                } else if (entity.type == "villain") {
+                    game.villains.push(body);
+                }
             }
         }
+    },
+    handlePanning:function(){
+
+        if(game.mode =="intro"){
+            if(game.panTo(700)){
+                game.mode = "load-next-hero";
+            }
+        }
+        console.log(game.mode) ;
+        if(game.mode =='wait-for-firing'){
+            if(mouse.dragging){
+                if(game.mouseOnCurrentHero()){
+                    game.mode = "firing";
+                } else {
+                    game.panTo(mouse.x + game.offsetLeft);
+                }
+            } else {
+                game.panTo(game.slingshotX);
+            }
+
+            game.panTo(game.slingshotX);
+        }
+        if(game.mode == 'firing'){
+           if(mouse.down){
+               game.panTo(game.slingshotX);
+               game.currentHero.SetPosition({x:(mouse.x+game.offsetLeft)/box2d.scale,y:(mouse.y/box2d.scale)});
+           }  else {
+               game.mode = "fired";
+               var impulseScaleFactor = 0.75 ;
+               var impulse = new b2Vec2((game.slingshotX+35-mouse.x-game.offsetLeft)*impulseScaleFactor,
+                   (game.slingshotY+25-mouse.y)*impulseScaleFactor);
+               game.currentHero.ApplyImpulse(impulse,game.currentHero.GetWorldCenter());
+           }
+
+        }
+        if(game.mode =='fired'){
+            //TODO:
+            //Suivre le hero
+            var HeroX = game.currentHero.GetPosition().x*box2d.scale;
+            game.panTo(HeroX);
+            //
+
+        }
+        if(game.mode =='load-next-hero'){
+            game.countHeroesAndVillains();
+            //verifier si il reste des villains vivant sinon le joueur gagne le stage
+            if(game.villains.length == 0){
+                game.mode = "level-success";
+                return;
+            }
+            //si plus de heros echec de la partie
+            if(game.heroes.length ==0){
+                game.mode = "level-failure";
+                return;
+            }
+            //charger le hero suivant et passer le jeu en mode wait-for-firing
+            if(!game.currentHero){
+                game.currentHero = game.heroes[game.heroes.length-1];
+                game.currentHero.SetPosition({x:180/box2d.scale,y:200/box2d.scale});
+                game.currentHero.SetLinearVelocity({x:0,y:0});
+                game.currentHero.SetAngularVelocity(0);
+                game.currentHero.SetAwake(true);
+            }  else {
+                game.panTo(game.slingshotX);
+                if(!game.currentHero.IsAwake()){
+                    game.mode = "wait-for-firing";
+                }
+            }
+
+        }
+
+    },
+    mouseOnCurrentHero: function(){
+        if(!game.currentHero){
+            return false;
+        }
+        var position = game.currentHero.GetPosition();
+        var distanceSquared = Math.pow(position.x*box2d.scale - mouse.x-game.offsetLeft,2) +
+            Math.pow(position.y*box2d.scale-mouse.y,2);
+        var radiusSquared = Math.pow(game.currentHero.GetUserData().radius,2);
+        return (distanceSquared<= radiusSquared);
     }
 
 }
