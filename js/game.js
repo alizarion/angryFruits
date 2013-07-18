@@ -32,12 +32,13 @@ var game = {
 // Hide all game layers and display the start screen
         levels.init();
         loader.init();
-        mouse.init();
+
         $('.gamelayer').hide();
         $('#gamestartscreen').show();
 //Get handler for game canvas and context
         game.canvas = $('#gamecanvas')[0];
         game.context = game.canvas.getContext('2d');
+        mouse.init();
     } ,
     showLevelScreen:function(){
         $('.gamelayer').hide();
@@ -218,6 +219,11 @@ var game = {
             var HeroX = game.currentHero.GetPosition().x*box2d.scale;
             game.panTo(HeroX);
             //
+            if(!game.currentHero.IsAwake()|| HeroX <0 || HeroX> game.currentLevel.width){
+               box2d.world.DestroyBody(game.currentHero);
+               game.currentHero = undefined;
+                game.mode = "load-next-hero";
+            }
 
         }
         if(game.mode =='load-next-hero'){
