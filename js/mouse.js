@@ -20,7 +20,7 @@ var mouse = {
         //console.log(ev.pageX,ev.pageY);
         if(mouse.down){
             mouse.dragging = true;
-            // console.log('mouse x = '+mouse.x + ', mouse y = '+ mouse.y+' dragging = ' + mouse.dragging );
+           // console.log('mouse x = '+mouse.x + ', mouse y = '+ mouse.y+' dragging = ' + mouse.dragging );
         }
 
     },

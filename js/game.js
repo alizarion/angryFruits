@@ -60,37 +60,7 @@ var game = {
 
 
     },
-    handlePanning:function(){
 
-        if(game.mode=="intro") {
-            if(game.panTo(700)){
-
-                game.mode = "load-next-hero";
-            }
-        }
-        if(game.mode=="wait-for-firing"){
-            //    console.log("wait-for-firing");
-            if(mouse.dragging){
-                game.panTo(mouse.x+game.offsetLeft);
-            } else {
-                game.panTo(game.slingshotX);
-            }
-
-        }
-        if(game.mode =="load-next-hero"){
-            //TODO verifier si le vilain est vivant sinon lvl success
-            //verifier s'il reste des heros vivant sinon niveau perdu
-            // console.log("load-next-hero");
-            game.mode="wait-for-firing";
-        }
-        if(game.mode=="firing"){
-            game.panTo(game.slingshotX);
-        }
-        if(game.mode == "fired"){
-            //TODO:
-            // suivre le hero
-        }
-    },
     animate:function() {
         //animer l'arriere plan
 
@@ -200,19 +170,20 @@ var game = {
                 game.mode = "load-next-hero";
             }
         }
-        console.log(game.mode) ;
+        console.log(game.mode);
         if(game.mode =='wait-for-firing'){
             if(mouse.dragging){
                 if(game.mouseOnCurrentHero()){
                     game.mode = "firing";
                 } else {
+                    //console.log(mouse.x + game.offsetLeft) ;
                     game.panTo(mouse.x + game.offsetLeft);
                 }
             } else {
                 game.panTo(game.slingshotX);
             }
 
-            game.panTo(game.slingshotX);
+
         }
         if(game.mode == 'firing'){
             if(mouse.down){
