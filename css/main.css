@@ -66,3 +66,32 @@
     top:5px;
     right:20px;
 }
+
+/* Ending Screen */
+#endingscreen {
+    text-align:center;
+}
+#endingscreen div {
+    height:430px;
+    padding-top:50px;
+    border:1px;
+    background:rgba(1,1,1,0.5);
+    text-align:left;
+    padding-left:100px;
+}
+#endingscreen p {
+    font: 20px Comic Sans MS;
+    text-shadow: 0 0 2px #000;
+    color:white;
+}
+#endingscreen p img{
+    top:10px;
+    position:relative;
+    cursor:pointer;
+}
+
+#endingscreen #endingmessage {
+    font: 32px Comic Sans MS;
+    text-shadow: 0 0 2px #000;
+    color:white;
+}

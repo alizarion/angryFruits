@@ -47,15 +47,15 @@ var entities = {
             shape:"circle",
             radius : 25,
             density:1.5,
-            friction : 0.5,
-            restitution :  0.4
+            friction :  0.05,
+            restitution :  0.04
         },
         "orange":{
             shape:"circle",
             radius : 25,
             density:1.5,
-            friction : 0.5,
-            restitution :  0.4
+            friction :  0.05,
+            restitution :  0.04
         },
         "strawberry":{
             shape:"circle",
@@ -84,6 +84,7 @@ var entities = {
             case "ground" : // simple rectangle
                 //pas besoin de vie ces blocks sont indestructible
                 entity.shape = "rectangle";
+                definition.friction = 7;
                 box2d.createRectangle(entity,definition);
                 //  console.log('creation d une entité de type :  ', entity.type);
 
@@ -92,6 +93,7 @@ var entities = {
                 //pas besoin de vie ils sont pour l'instant indestructible
                 entity.shape = "circle"
                 entity.radius = definition.radius;
+                entity.fired = false;
                 entity.sprite = loader.loadImage('img/entities/'+entity.name+".png");
                 box2d.createCircle(entity,definition);
                 //   console.log('creation d une entité de type :  ', entity.type);

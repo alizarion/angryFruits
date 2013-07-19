@@ -8,10 +8,10 @@ var levels = {
                 {type:"ground", name:"wood", x:180,y:390,width:40,height:80,isStatic:true},
                 {type:"block", name:"wood", x:520,y:375,angle:90,width:100,height:25},
                 {type:"block", name:"glass", x:520,y:275,angle:90,width:100,height:25},
-                {type:"villain", name:"burger",x:520,y:150,calories:590},
+                {type:"villain", name:"burger",x:520,y:200,calories:590},
                 {type:"block", name:"wood", x:620,y:375,angle:90,width:100,height:25},
                 {type:"block", name:"glass", x:620,y:275,angle:90,width:100,height:25},
-                {type:"villain", name:"fries", x:620,y:150,calories:420},
+                {type:"villain", name:"fries", x:620,y:200,calories:420},
                 {type:"hero", name:"orange",x:90,y:400},
                 {type:"hero", name:"apple",x:150,y:400}]
 
@@ -19,7 +19,16 @@ var levels = {
         { // Second level
             foreground:'desert-foreground',
             background:'clouds-background',
-            entities:[]
+            entities:[{type:"ground", name:"dirt", x:500,y:440,width:1000,height:20,isStatic:true},
+                {type:"ground", name:"wood", x:180,y:390,width:40,height:80,isStatic:true},
+                {type:"block", name:"wood", x:520,y:375,angle:90,width:100,height:25},
+                {type:"block", name:"glass", x:520,y:275,angle:90,width:100,height:25},
+                {type:"villain", name:"burger",x:520,y:150,calories:590},
+                {type:"block", name:"wood", x:620,y:375,angle:90,width:100,height:25},
+                {type:"block", name:"glass", x:620,y:275,angle:90,width:100,height:25},
+                {type:"villain", name:"fries", x:620,y:150,calories:420},
+                {type:"hero", name:"orange",x:90,y:400},
+                {type:"hero", name:"apple",x:150,y:400}]
         }
     ],
 // Initialize level selection screen
@@ -39,10 +48,11 @@ var levels = {
 // Load all data and images for a specific level
     load:function(number){
         box2d.init();
+        console.log('level ' ,number);
         //declare new current level
         game.currentLevel = {number: number, hero:[]};
         game.score = 0;
-        $('#score').html('Score '+game.score);
+        $('#score').html('Score : '+game.score);
         var level = levels.data[number];
         // chargement des images du level
         game.currentLevel.backgroundImage =  loader.loadImage("img/backgrounds/"+level.background+".png");

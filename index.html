@@ -34,12 +34,10 @@
     </div>
     <div id="endingscreen" class="gamelayer">
         <div>
-            <p id="endingmessage" > The Level Is Over Message</p>
-            <p id="playcurrentlevel"><img src="img/icons/prev.png" > Replay Current
-                Level</p>
-            <p id="playnextlevel"><img src="img/icons/next.png" > Play Next Level </p>
-            <p id="showLevelScreen"><img src="img/icons/return.png" > Return to Level
-                Screen</p>
+            <p id="endingmessage" > Fin de la partie</p>
+            <p id="playcurrentlevel"><img src="img/icons/prev.png" onclick="levels.load(game.currentLevel.number);" >Re-jouer </p>
+            <p id="playnextlevel"><img src="img/icons/next.png" onclick="levels.load(game.currentLevel.number+1);"> Niveau suivant </p>
+            <p id="showLevelScreen"><img src="img/icons/return.png" onclick="game.showLevelScreen();" > Retour au menu des niveaux</p>
         </div>
     </div>
 

@@ -124,7 +124,21 @@ var game = {
         for(var body = box2d.world.GetBodyList();body; body = body.GetNext()){
             var entity = body.GetUserData();
             if(entity){
-                entities.draw(entity,body.GetPosition(),body.GetAngle());
+                var entityX = body.GetPosition().x*box2d.scale;
+
+                if((entity.health && entity.health <0) || entityX < 0 || entityX > game.currentLevel.foregroundImage.width ){
+                    if(entity.calories){
+                        console.log("Score : ", +game.score);
+                        game.score +=  entity.calories;
+                        $('#score').html('Score : ' + game.score);
+                        console.log("Score : ", +game.score);
+                    }
+
+                    box2d.world.DestroyBody(body);
+
+                }  else {
+                    entities.draw(entity,body.GetPosition(),body.GetAngle());
+                }
             }
         }
 
@@ -201,16 +215,18 @@ var game = {
             game.panTo(game.slingshotX);
         }
         if(game.mode == 'firing'){
-           if(mouse.down){
-               game.panTo(game.slingshotX);
-               game.currentHero.SetPosition({x:(mouse.x+game.offsetLeft)/box2d.scale,y:(mouse.y/box2d.scale)});
-           }  else {
-               game.mode = "fired";
-               var impulseScaleFactor = 0.75 ;
-               var impulse = new b2Vec2((game.slingshotX+35-mouse.x-game.offsetLeft)*impulseScaleFactor,
-                   (game.slingshotY+25-mouse.y)*impulseScaleFactor);
-               game.currentHero.ApplyImpulse(impulse,game.currentHero.GetWorldCenter());
-           }
+            if(mouse.down){
+                game.panTo(game.slingshotX);
+                game.currentHero.SetPosition({x:(mouse.x+game.offsetLeft)/box2d.scale,y:(mouse.y/box2d.scale)});
+            }  else {
+                game.mode = "fired";
+                var entity  = game.currentHero.GetUserData();
+                entity.fired = true;
+                var impulseScaleFactor = 0.75 ;
+                var impulse = new b2Vec2((game.slingshotX+35-mouse.x-game.offsetLeft)*impulseScaleFactor,
+                    (game.slingshotY+25-mouse.y)*impulseScaleFactor);
+                game.currentHero.ApplyImpulse(impulse,game.currentHero.GetWorldCenter());
+            }
 
         }
         if(game.mode =='fired'){
@@ -219,13 +235,21 @@ var game = {
             var HeroX = game.currentHero.GetPosition().x*box2d.scale;
             game.panTo(HeroX);
             //
-            if(!game.currentHero.IsAwake()|| HeroX <0 || HeroX> game.currentLevel.width){
-               box2d.world.DestroyBody(game.currentHero);
-               game.currentHero = undefined;
+            if(!game.currentHero.IsAwake() || HeroX < 0 || HeroX > game.currentLevel.foregroundImage.width){
+                box2d.world.DestroyBody(game.currentHero);
+                game.currentHero = undefined;
                 game.mode = "load-next-hero";
             }
 
         }
+
+        if(game.mode =='level-failure' || game.mode =='level-success'){
+            game.panTo(0);
+            game.ended = true;
+            game.showEndingScreen();
+        }
+
+
         if(game.mode =='load-next-hero'){
             game.countHeroesAndVillains();
             //verifier si il reste des villains vivant sinon le joueur gagne le stage
@@ -264,6 +288,22 @@ var game = {
             Math.pow(position.y*box2d.scale-mouse.y,2);
         var radiusSquared = Math.pow(game.currentHero.GetUserData().radius,2);
         return (distanceSquared<= radiusSquared);
+    } ,
+    showEndingScreen: function(){
+        console.log('ending level');
+        if(game.mode == "level-success"){
+            if(game.currentLevel.number<levels.data.length-1){
+                $('#endingmessage').html("Whesh tu as gagné !");
+                $('#playnextlevel').show();
+            }  else {
+                $('#endingmessage').html("wesh t'as fini le jeu... tranquiiiil!");
+                $('#playnextlevel').hide();
+            }
+        } else {
+            $('#endingmessage').html('Wesh t\'as merdé gros!');
+            $('#playnextlevel').hide();
+        }
+        $('#endingscreen').show();
     }
 
 }

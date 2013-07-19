@@ -30,6 +30,29 @@ var box2d= {
         // Start using debug draw in our world
         box2d.world.mouseInteraction = true;
         box2d.world.SetDebugDraw(debugDraw);
+        var listener = new Box2D.Dynamics.b2ContactListener;
+       listener.PostSolve = function(contact,impulse){
+            var body1  = contact.GetFixtureA().GetBody();
+            var body2 = contact.GetFixtureB().GetBody();
+            var entity1 = body1.GetUserData();
+            var entity2 = body2.GetUserData();
+
+
+            var impulseAlongNormal = Math.round(impulse.normalImpulses[0]);
+
+            //ce listener est appeler trop frequement, il convient d'en prendre compte que sur les chocs violent
+
+            if(impulseAlongNormal >5 ){
+                 if(entity1.health){
+                     entity1.health -=impulseAlongNormal;
+                 }
+                if(entity2.health){
+                    entity2.health -=impulseAlongNormal;
+                }
+            }
+        }
+
+        box2d.world.SetContactListener(listener);
     },
     createRectangle: function(entity,definition){
         var bodyDef = new b2BodyDef;
